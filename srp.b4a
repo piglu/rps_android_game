@@ -1,0 +1,298 @@
+﻿Version=5.8
+NumberOfModules=2
+Module1=Shake
+Module2=options
+Build1=Default,com.stanks.rps,Full
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="19"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~
+IconFile=
+NumberOfFiles=13
+File1=mejn.bal
+File2=opt.bal
+File3=rps_cart_1.png
+File4=rps_cart_2.png
+File5=rps_cart_3.png
+File6=rps_cartoon_1.png
+File7=rps_cartoon_2.png
+File8=rps_cartoon_3.png
+File9=rps_h_1.png
+File10=rps_h_2.png
+File11=rps_h_3.png
+File12=shake.mp3
+File13=shake_it_baby.mp3
+NumberOfLibraries=3
+Library1=core
+Library2=audio
+Library3=phone
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: Rock-Paper-Scissors
+	#VersionCode: 1
+	#VersionName: 1
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: unspecified
+	#CanInstallToExternalStorage: False
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: False
+	#IncludeTitle: True
+#End Region
+
+Sub Process_Globals
+	'These global variables will be declared once when the application starts.
+	'These variables can be accessed from all modules.
+	Dim sensor As PhoneSensors
+	Dim sounds As SoundPool
+	Dim bounceId2 As Int
+End Sub
+
+Sub Globals
+	'These global variables will be redeclared each time the activity is created.
+	'These variables can only be accessed from this module.
+	Private iv1 As ImageView
+	Private iv2 As ImageView
+	Private lblIme1 As Label
+	Private lblRes1 As Label
+	Private lblIme2 As Label
+	Private lblRes2 As Label
+	Dim ply1, ply2 As Int
+	Dim result1, result2 As Int
+	Private lblRes As Label
+	Dim snd, img As Int
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	Dim ph As Phone
+
+	ph.SetScreenOrientation(1)
+
+	'Do not forget to load the layout file created with the visual designer. For example:
+	Activity.LoadLayout("mejn")
+
+	If FirstTime Then
+		sensor.Initialize(sensor.TYPE_ACCELEROMETER)
+		If sensor.MaxValue = -1 Then
+			Msgbox("Sensor not supported!", "Warning")
+			Activity.Finish
+		End If
+		Shake.CallBackActivity = "Main" 'Set the activity that handles the Shake event
+		sounds.Initialize(1)
+	End If
+
+	CreateNewGame
+
+	Activity.AddMenuItem("Options", "mnuOptions")
+	Activity.AddMenuItem("New Game", "mnuNewGame")
+
+	Activity.Title = "Rock-Paper-Scissors"
+End Sub
+
+Sub OpenOptions
+	Dim map1 As Map
+
+	If File.Exists(File.DirInternal, "opt") Then
+		map1 = File.ReadMap(File.DirInternal, "opt")
+		snd = map1.GetValueAt(0)
+		img = map1.GetValueAt(1)
+		Log("snd: " & snd)
+		ToastMessageShow("snd: " & snd, False)
+		Log("img: "& img)
+		ToastMessageShow("img: " & img, False)
+		If snd = 1 Then
+			bounceId2 = sounds.Load(File.DirAssets, "shake_it_baby.mp3")
+		Else if snd = 2 Then
+			bounceId2 = sounds.Load(File.DirAssets, "shake.mp3")
+		End If
+		If img = 0 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_1.png")
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_2.png")
+		else if img = 1 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_1.png")
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_2.png")
+		Else if img = 2 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_h_1.png")
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_h_2.png")
+		End If
+	Else
+		snd = 1
+		bounceId2 = sounds.Load(File.DirAssets, "shake_it_baby.mp3")
+		img = 2
+		iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_h_1.png")
+		iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_h_2.png")
+	End If
+End Sub
+
+Sub mnuOptions_Click
+	StartActivity(options)
+End Sub
+
+Sub mnuNewGame_Click
+	CreateNewGame
+End Sub
+
+Sub CreateNewGame
+	OpenOptions
+
+'	If img = 0 Then
+'		iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_1.png")
+'		iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_2.png")
+'	else if img = 1 Then
+'		iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_1.png")
+'		iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_2.png")
+'	Else if img = 2 Then
+'		iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_h_1.png")
+'		iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_h_2.png")
+'	End If
+
+	lblIme1.Text = "You"
+	lblIme2.Text = "Android"
+	lblRes1.Text = "0"
+	lblRes2.Text = "0"
+	lblRes.Text = "Unknown"
+	result1 = 0
+	result2 = 0
+End Sub
+
+Sub Activity_Resume
+	sensor.StartListening("sensor")
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+	sensor.StopListening
+End Sub
+
+Sub sensor_SensorChanged (Values() As Float)
+	Shake.HandleSensorEvent(Values)
+End Sub
+
+Sub ShakeEvent
+	' pokreni random number generator
+	Dim player1 As Int = RandomNumber(1, 3000, 0, False)
+	Dim player2 As Int = RandomNumber(1, 3000, 0, False)
+
+	sounds.Play(bounceId2, 1, 1, 1, 0, 1)
+	' player 1
+	If player1 >= 1 And player1 <= 1000 Then
+		If img = 0 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_1.png")
+		else if img = 1 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_1.png")
+		Else
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_h_1.png")
+		End If
+		ply1 = 1
+	else if player1 >= 1001 And player1 <= 2000 Then
+		If img = 0 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_2.png")
+		else if img = 1 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_2.png")
+		Else
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_h_2.png")
+		End If
+		ply1 = 2
+	Else
+		If img = 0 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_3.png")
+		else if img = 1 Then
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_3.png")
+		Else
+			iv1.Bitmap = LoadBitmap(File.DirAssets, "rps_h_3.png")
+		End If
+		ply1 = 3
+	End If
+	' player 2
+	If player2 >= 1 And player2 <= 1000 Then
+		If img = 0 Then
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_1.png")
+		else if img = 1 Then
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_1.png")
+		Else
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_h_1.png")
+		End If
+		ply2 = 1
+	else if player2 >= 1001 And player2 <= 2000 Then
+		If img = 0 Then
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_2.png")
+		else if img = 1 Then
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_2.png")
+		Else
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_h_2.png")
+		End If
+		ply2 = 2
+	Else
+		If img = 0 Then
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cart_3.png")
+		else if img = 1 Then
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_cartoon_3.png")
+		Else
+			iv2.Bitmap = LoadBitmap(File.DirAssets, "rps_h_3.png")
+		End If
+		ply2 = 3
+	End If
+
+	ShowResult
+End Sub
+
+Sub ShowResult
+	Select ply1
+		Case 1
+			If ply2 = 1 Then lblRes.Text = "DRAWS!"
+			If ply2 = 2 Then
+				lblRes.Text = "Player 2 wins! (Stone blunt scissors)"
+				result2 = result2 + 1
+				lblRes2.Text = result2
+			End If
+			If ply2 = 3 Then
+				lblRes.Text = "Player1 wins! (Scissors cut paper)"
+				result1 = result1 + 1
+				lblRes1.Text = result1
+			End If
+		Case 2
+			If ply2 = 1 Then
+				lblRes.Text = "Player 1 wins! (Stone blunt scissors)"
+				result1 = result1 + 1
+				lblRes1.Text = result1
+			End If
+			If ply2 = 2 Then lblRes.Text = "DRAWS!"
+			If ply2 = 3 Then
+				lblRes.Text = "Player 2 wins! (Paper covers rock)"
+				result2 = result2 + 1
+				lblRes2.Text = result2
+			End If
+		Case 3
+			If ply2 = 1 Then
+				lblRes.Text = "Player2 wins! (Scissors cut paper)"
+				result2 = result2 + 1
+				lblRes2.Text = result2
+			End If
+			If ply2 = 2 Then
+				lblRes.Text = "Player 1 wins! (Paper covers rock)"
+				result1 = result1 + 1
+				lblRes1.Text = result1
+			End If
+			If ply2 = 3 Then lblRes.Text = "DRAWS!"
+	End Select
+End Sub
+
+'Returns a random double between Lowest (inclusive) and Highest (exclusive), with n decimal places.
+Sub RandomNumber(Lowest As Double, Highest As Double, DecimalPlaces As Int, PreventZero As Boolean) As Double
+    Lowest  = Round(Lowest)
+    Highest = Round(Highest)
+    Dim Decimal As Double
+    If DecimalPlaces > 0 Then Decimal = (Rnd(0, Power(10, DecimalPlaces))) / Power(10, DecimalPlaces)
+    If Lowest = Highest Then
+        Return Lowest
+    Else
+        If Lowest > Highest Then
+            Dim TempValue = Lowest As Double
+            Lowest   = Highest
+            Highest  = TempValue
+        End If
+        Dim ReturnValue = Lowest + Rnd(0, Highest - Lowest) + Decimal As Double
+        If ReturnValue = 0 And PreventZero Then
+            Return RandomNumber(Lowest, Highest, DecimalPlaces, PreventZero)
+        Else
+            Return ReturnValue
+        End If
+    End If
+End Sub
